@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Fanbase</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:Arial;
+      background:#0f0f0f;
+      color:white;
+    }
+
+    nav{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:20px;
+      background:black;
+      border-bottom:1px solid #222;
+    }
+
+    .logo{
+      font-size:24px;
+      font-weight:bold;
+      color:#00ff99;
+    }
+
+    .nav-links a{
+      color:white;
+      text-decoration:none;
+      margin-left:20px;
+    }
+
+    .hero{
+      height:80vh;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding:20px;
+    }
+
+    .hero h1{
+      font-size:48px;
+      margin-bottom:10px;
+    }
+
+    .hero p{
+      color:#aaa;
+      max-width:500px;
+    }
+
+    .btn{
+      margin-top:20px;
+      background:#00ff99;
+      color:black;
+      padding:15px 30px;
+      border:none;
+      border-radius:10px;
+      font-weight:bold;
+      text-decoration:none;
+    }
+
+    .events{
+      padding:40px 20px;
+    }
+
+    .card{
+      background:#1b1b1b;
+      padding:20px;
+      margin-bottom:20px;
+      border-radius:15px;
+    }
+  </style>
+</head>
+
+<body>
+
+<nav>
+  <div class="logo">Fanbase</div>
+
+  <div class="nav-links">
+    <a href="pages/login.html">Login</a>
+    <a href="pages/signup.html">Sign Up</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <h1>Discover Events Around You</h1>
+
+  <p>
+    Fanbase helps creators, organisers and fans connect through real events.
+  </p>
+
+  <a class="btn" href="pages/signup.html">
+    Get Started
+  </a>
+</section>
+
+<section class="events">
+  <h2>Trending Events</h2>
+
+  <div id="events"></div>
+</section>
+
+<script>
+const API = "http://127.0.0.1:5000/api/events";
+
+async function loadEvents(){
+  const res = await fetch(API);
+  const data = await res.json();
+
+  const box = document.getElementById("events");
+
+  data.events.forEach(event => {
+    box.innerHTML += `
+      <div class="card">
+        <h3>${event.title}</h3>
+        <p>${event.description}</p>
+        <p>📍 ${event.location}</p>
+        <p>R${event.price}</p>
+      </div>
+    `;
+  });
+}
+
+loadEvents();
+</script>
+
+</body>
+</html>
+  

@@ -1,0 +1,18 @@
+body {
+  font-family: Arial;
+  background: #0f0f0f;
+  color: white;
+  text-align: center;
+}
+
+#events {
+  margin-top: 20px;
+}
+
+.card {
+  background: #1c1c1c;
+  margin: 10px auto;
+  padding: 15px;
+  width: 300px;
+  border-radius: 10px;
+}

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Fanbase Dashboard</title>
+
+<style>
+
+body{
+  margin:0;
+  background:#0f0f0f;
+  color:white;
+  font-family:Arial;
+}
+
+.top{
+  background:#1b1b1b;
+  padding:20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.logo{
+  color:#00ff99;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.container{
+  padding:20px;
+}
+
+.card{
+  background:#1b1b1b;
+  padding:20px;
+  margin-bottom:20px;
+  border-radius:15px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:8px;
+  background:#2b2b2b;
+  color:white;
+}
+
+button{
+  padding:12px 20px;
+  margin-top:15px;
+  border:none;
+  border-radius:8px;
+  background:#00ff99;
+  color:black;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.event{
+  background:#222;
+  padding:15px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <div class="logo">🎟 Fanbase</div>
+
+  <button onclick="logout()">
+    Logout
+  </button>
+</div>
+
+<div class="container">
+
+<h1 id="welcome"></h1>
+
+<div class="card">
+
+<h2>Create Event</h2>
+
+<input id="title" placeholder="Event title">
+
+<input id="description" placeholder="Description">
+
+<input id="location" placeholder="Location">
+
+<input id="price" placeholder="Price">
+
+<button onclick="createEvent()">
+Create Event
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Live Events</h2>
+
+<div id="events"></div>
+
+</div>
+
+</div>
+
+<script>
+
+// auth protection
+const token = localStorage.getItem("token");
+
+if(!token){
+  window.location.href = "/pages/login";
+}
+
+// user info
+const user = JSON.parse(localStorage.getItem("user"));
+
+document.getElementById("welcome").innerText =
+  `Welcome ${user.username} 🚀`;
+
+// logout
+function logout(){
+  localStorage.clear();
+  window.location.href = "/pages/login";
+}
+
+// load events
+async function loadEvents(){
+
+  const res = await fetch("/api/events");
+  const data = await res.json();
+
+  const eventsBox = document.getElementById("events");
+
+  eventsBox.innerHTML = "";
+
+  data.events.forEach(event => {
+
+    eventsBox.innerHTML += `
+      <div class="event">
+        <h3>${event.title}</h3>
+        <p>${event.description}</p>
+        <p>📍 ${event.location}</p>
+        <p>R${event.price}</p>
+      </div>
+    `;
+
+  });
+}
+
+// create event
+async function createEvent(){
+
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const location = document.getElementById("location").value;
+  const price = document.getElementById("price").value;
+
+  const res = await fetch("/api/events", {
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body: JSON.stringify({
+      title,
+      description,
+      location,
+      price,
+      organiserId:user._id
+    })
+
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+
+    alert("Event created 🚀");
+
+    loadEvents();
+
+  } else {
+
+    alert("Error creating event");
+
+  }
+
+}
+
+// initial load
+loadEvents();
+
+</script>
+
+</body>
+</html>
