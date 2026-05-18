@@ -1,42 +1,20 @@
-const express = require("express");
-const router = express.Router();
-const Event = require("../models/Event");
-
-// ✅ GET ALL EVENTS
-router.get("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 });
+    const { title, location, date, description } = req.body;
 
-    res.json({
-      success: true,
-      events
-    });
-
-  } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
-  }
-});
-
-// ✅ CREATE EVENT (NEW)
-router.post("/", async (req, res) => {
-  try {
-    const { title, location, date } = req.body;
-
-    // basic validation
     if (!title || !location || !date) {
       return res.json({
         success: false,
-        message: "Please fill all fields"
+        message: "Missing fields"
       });
     }
 
     const newEvent = new Event({
       title,
       location,
-      date
+      date,
+      description,
+      organiserId: req.user.id
     });
 
     await newEvent.save();
@@ -54,5 +32,3 @@ router.post("/", async (req, res) => {
     });
   }
 });
-
-module.exports = router;
