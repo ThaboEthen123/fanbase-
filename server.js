@@ -3,50 +3,25 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
 
-const app = express();
+const authRoutes = require("./routes/auth");
+const eventRoutes = require("./routes/events");
 
-// Middleware
+const app = express();
+const PORT = process.env.PORT || 5000;
+
 app.use(cors());
 app.use(express.json());
 
-// ======================
-// DATABASE CONNECTION
-// ======================
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB Connected ✅"))
-  .catch(err => console.log("DB Error ❌", err));
+// Routes
+app.use("/api/auth", authRoutes);
+app.use("/api/events", eventRoutes);
 
-// ======================
-// MODEL
-// ======================
-const Event = require("./models/Event");
-
-// ======================
-// ROUTES
-// ======================
-
-// Test route
+// Home route
 app.get("/", (req, res) => {
   res.json({ message: "Fanbase API Running 🚀" });
 });
 
-// GET ALL EVENTS
-app.get("/api/events", async (req, res) => {
-  try {
-    const events = await Event.find();
-    res.json({
-      success: true,
-      events
-    });
-  } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
-  }
-});
-
-// DEBUG ROUTE (IMPORTANT)
+// Debug route (VERY IMPORTANT)
 app.get("/debug-db", async (req, res) => {
   try {
     const dbName = mongoose.connection.db.databaseName;
@@ -61,11 +36,12 @@ app.get("/debug-db", async (req, res) => {
   }
 });
 
-// ======================
-// START SERVER
-// ======================
-const PORT = process.env.PORT || 5000;
+// MongoDB connection (ONLY METHOD USED)
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log("MongoDB Connected ✅"))
+  .catch(err => console.log("MongoDB Error ❌", err));
 
-app.listen(PORT, () => {
-  console.log(`Fanbase running on port ${PORT}`);
+// Start server
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
 });
