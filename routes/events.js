@@ -136,3 +136,66 @@ router.post("/:id/unlike", auth, async (req, res) => {
     res.json({ success: false, error: err.message });
   }
 });
+// =======================
+// 💬 ADD COMMENT
+// =======================
+router.post("/:id/comment", auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) {
+      return res.json({
+        success: false,
+        message: "Comment cannot be empty"
+      });
+    }
+
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.json({
+        success: false,
+        message: "Event not found"
+      });
+    }
+
+    const comment = {
+      userId: req.user.id,
+      text
+    };
+
+    event.comments.push(comment);
+    await event.save();
+
+    res.json({
+      success: true,
+      message: "Comment added",
+      comments: event.comments
+    });
+
+  } catch (err) {
+    res.json({
+      success: false,
+      error: err.message
+    });
+  }
+});router.get("/:id/comments", async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.json({ success: false, message: "Event not found" });
+    }
+
+    res.json({
+      success: true,
+      comments: event.comments
+    });
+
+  } catch (err) {
+    res.json({
+      success: false,
+      error: err.message
+    });
+  }
+});

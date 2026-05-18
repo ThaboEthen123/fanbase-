@@ -11,11 +11,18 @@ const eventSchema = new mongoose.Schema(
 
     // ❤️ LIKE SYSTEM
     likes: {
-      type: [String],
-      default: []
-    }
-  },
-  { timestamps: true }
-);
+  type: [String],
+  default: []
+},
 
+comments: [
+  {
+    userId: String,
+    text: String,
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }
+]
 module.exports = mongoose.model("Event", eventSchema);
