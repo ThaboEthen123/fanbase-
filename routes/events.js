@@ -81,3 +81,58 @@ router.post("/", auth, async (req, res) => {
 
 
 module.exports = router;
+// =======================
+// ❤️ LIKE EVENT
+// =======================
+router.post("/:id/like", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.json({ success: false, message: "Event not found" });
+    }
+
+    // prevent duplicate likes
+    if (event.likes.includes(req.user.id)) {
+      return res.json({ success: false, message: "Already liked" });
+    }
+
+    event.likes.push(req.user.id);
+    await event.save();
+
+    res.json({
+      success: true,
+      message: "Event liked",
+      likes: event.likes.length
+    });
+
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});// =======================
+// 💔 UNLIKE EVENT
+// =======================
+router.post("/:id/unlike", auth, async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.json({ success: false, message: "Event not found" });
+    }
+
+    event.likes = event.likes.filter(
+      (userId) => userId !== req.user.id
+    );
+
+    await event.save();
+
+    res.json({
+      success: true,
+      message: "Event unliked",
+      likes: event.likes.length
+    });
+
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});

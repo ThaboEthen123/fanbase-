@@ -5,10 +5,15 @@ const eventSchema = new mongoose.Schema(
     title: { type: String, required: true },
     location: { type: String, required: true },
     date: { type: String, required: true },
+    description: { type: String },
 
-    // optional fields (NOT required anymore)
-    description: { type: String, default: "" },
-    organiserId: { type: String, default: "system" }
+    organiserId: { type: String, required: true },
+
+    // ❤️ LIKE SYSTEM
+    likes: {
+      type: [String],
+      default: []
+    }
   },
   { timestamps: true }
 );
