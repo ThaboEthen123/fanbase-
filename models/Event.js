@@ -5,24 +5,24 @@ const eventSchema = new mongoose.Schema(
     title: { type: String, required: true },
     location: { type: String, required: true },
     date: { type: String, required: true },
-    description: { type: String },
+    description: { type: String, default: "" },
 
     organiserId: { type: String, required: true },
 
-    // ❤️ LIKE SYSTEM
-    likes: {
-  type: [String],
-  default: []
-},
+    likes: { type: [String], default: [] },
 
-comments: [
-  {
-    userId: String,
-    text: String,
-    createdAt: {
-      type: Date,
-      default: Date.now
+    comments: {
+      type: [
+        {
+          userId: String,
+          text: String,
+          createdAt: { type: Date, default: Date.now }
+        }
+      ],
+      default: []
     }
-  }
-]
+  },
+  { timestamps: true }
+);
+
 module.exports = mongoose.model("Event", eventSchema);
