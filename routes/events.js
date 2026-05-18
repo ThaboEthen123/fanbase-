@@ -1,3 +1,13 @@
+const express = require("express");
+const Event = require("../models/Event");
+const auth = require("../middleware/auth");
+
+const router = express.Router();
+
+
+// =======================
+// 📅 GET EVENTS (FEED + PAGINATION)
+// =======================
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -27,3 +37,47 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+
+// =======================
+// 📅 CREATE EVENT (PROTECTED)
+// =======================
+router.post("/", auth, async (req, res) => {
+  try {
+    const { title, location, date, description } = req.body;
+
+    // validation
+    if (!title || !location || !date) {
+      return res.status(400).json({
+        success: false,
+        message: "title, location, and date are required"
+      });
+    }
+
+    // create event
+    const newEvent = new Event({
+      title,
+      location,
+      date,
+      description,
+      organiserId: req.user.id   // 🔐 real logged-in user
+    });
+
+    await newEvent.save();
+
+    res.json({
+      success: true,
+      message: "Event created successfully",
+      event: newEvent
+    });
+
+  } catch (err) {
+    res.json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+
+module.exports = router;
