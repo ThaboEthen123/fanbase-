@@ -31,6 +31,7 @@ app.get("/debug-db", async (req, res) => {
       db: dbName,
       collections: collections.map(c => c.name)
     });
+
   } catch (err) {
     res.json({ error: err.message });
   }
