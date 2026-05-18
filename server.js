@@ -47,17 +47,17 @@ app.get("/api/events", async (req, res) => {
 });
 
 // DEBUG ROUTE (IMPORTANT)
-app.get("/debug-events", async (req, res) => {
+app.get("/debug-db", async (req, res) => {
   try {
-    const events = await Event.find();
+    const dbName = mongoose.connection.db.databaseName;
+    const collections = await mongoose.connection.db.listCollections().toArray();
+
     res.json({
-      count: events.length,
-      data: events
+      db: dbName,
+      collections: collections.map(c => c.name)
     });
   } catch (err) {
-    res.json({
-      error: err.message
-    });
+    res.json({ error: err.message });
   }
 });
 
