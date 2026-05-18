@@ -1,61 +1,49 @@
 const express = require("express");
 const router = express.Router();
+
 const Event = require("../models/Event");
 const auth = require("../middleware/auth");
 
-
-// =======================
-// 📅 CREATE EVENT (PROTECTED)
-// =======================
+// =====================
+// CREATE EVENT
+// =====================
 router.post("/", auth, async (req, res) => {
   try {
     const { title, location, date, description } = req.body;
 
-    if (!title || !location || !date) {
-      return res.json({
-        success: false,
-        message: "Missing required fields"
-      });
-    }
-
-    const newEvent = new Event({
+    const event = new Event({
       title,
       location,
       date,
       description,
-      organiserId: req.user.id
+      organiserId: req.user.id,
+      likes: [],
+      comments: []
     });
 
-    await newEvent.save();
+    await event.save();
 
     res.json({
       success: true,
       message: "Event created successfully",
-      event: newEvent
+      event
     });
-
   } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
+    res.json({ success: false, error: err.message });
   }
 });
 
-
-// =======================
-// 📥 GET EVENTS (FEED + PAGINATION)
-// =======================
+// =====================
+// GET EVENTS (FEED)
+// =====================
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
 
-    const skip = (page - 1) * limit;
-
     const events = await Event.find()
       .sort({ createdAt: -1 })
-      .skip(skip)
+      .skip((page - 1) * limit)
       .limit(limit);
 
     const total = await Event.countDocuments();
@@ -67,86 +55,44 @@ router.get("/", async (req, res) => {
       totalEvents: total,
       events
     });
-
   } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
+    res.json({ success: false, error: err.message });
   }
 });
 
-
-// =======================
-// ❤️ LIKE EVENT (TOGGLE)
-// =======================
+// =====================
+// LIKE EVENT
+// =====================
 router.post("/:id/like", auth, async (req, res) => {
   try {
     const event = await Event.findById(req.params.id);
 
-    if (!event) {
-      return res.json({ success: false, message: "Event not found" });
-    }
-
-    const userId = req.user.id;
-
-    if (event.likes.includes(userId)) {
-      event.likes = event.likes.filter(id => id !== userId);
+    if (!event.likes.includes(req.user.id)) {
+      event.likes.push(req.user.id);
       await event.save();
-
-      return res.json({
-        success: true,
-        message: "Unliked event"
-      });
     }
 
-    event.likes.push(userId);
-    await event.save();
-
-    res.json({
-      success: true,
-      message: "Liked event"
-    });
-
+    res.json({ success: true, message: "Liked" });
   } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
+    res.json({ success: false, error: err.message });
   }
 });
 
-
-// =======================
-// 💬 ADD COMMENT
-// =======================
+// =====================
+// COMMENT EVENT
+// =====================
 router.post("/:id/comment", auth, async (req, res) => {
   try {
     const { text } = req.body;
 
-    if (!text) {
-      return res.json({
-        success: false,
-        message: "Comment text required"
-      });
-    }
-
     const event = await Event.findById(req.params.id);
 
-    if (!event) {
-      return res.json({
-        success: false,
-        message: "Event not found"
-      });
-    }
-
-    const comment = {
+    event.comments.push({
       userId: req.user.id,
       text,
       createdAt: new Date()
-    };
+    });
 
-    event.comments.push(comment);
     await event.save();
 
     res.json({
@@ -154,42 +100,9 @@ router.post("/:id/comment", auth, async (req, res) => {
       message: "Comment added",
       comments: event.comments
     });
-
   } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
+    res.json({ success: false, error: err.message });
   }
 });
-
-
-// =======================
-// 📥 GET COMMENTS
-// =======================
-router.get("/:id/comments", async (req, res) => {
-  try {
-    const event = await Event.findById(req.params.id);
-
-    if (!event) {
-      return res.json({
-        success: false,
-        message: "Event not found"
-      });
-    }
-
-    res.json({
-      success: true,
-      comments: event.comments
-    });
-
-  } catch (err) {
-    res.json({
-      success: false,
-      error: err.message
-    });
-  }
-});
-
 
 module.exports = router;
