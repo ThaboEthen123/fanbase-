@@ -1,28 +1,23 @@
-router.post("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const { title, location, date, description } = req.body;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
 
-    if (!title || !location || !date) {
-      return res.json({
-        success: false,
-        message: "Missing fields"
-      });
-    }
+    const skip = (page - 1) * limit;
 
-    const newEvent = new Event({
-      title,
-      location,
-      date,
-      description,
-      organiserId: req.user.id
-    });
+    const events = await Event.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
-    await newEvent.save();
+    const total = await Event.countDocuments();
 
     res.json({
       success: true,
-      message: "Event created successfully",
-      event: newEvent
+      page,
+      totalPages: Math.ceil(total / limit),
+      totalEvents: total,
+      events
     });
 
   } catch (err) {
