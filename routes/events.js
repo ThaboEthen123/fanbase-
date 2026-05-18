@@ -1,8 +1,7 @@
 const express = require("express");
+const router = express.Router();
 const Event = require("../models/Event");
 const auth = require("../middleware/auth");
-
-const router = express.Router();
 
 
 // =======================
@@ -197,5 +196,36 @@ router.post("/:id/comment", auth, async (req, res) => {
       success: false,
       error: err.message
     });
+  }
+});
+router.post("/:id/comment", auth, async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) {
+      return res.json({ success: false, message: "Comment required" });
+    }
+
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.json({ success: false, message: "Event not found" });
+    }
+
+    event.comments.push({
+      userId: req.user.id,
+      text
+    });
+
+    await event.save();
+
+    res.json({
+      success: true,
+      message: "Comment added",
+      comments: event.comments
+    });
+
+  } catch (err) {
+    res.json({ success: false, error: err.message });
   }
 });
