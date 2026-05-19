@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();
+require("dotenv").config();console.log("JWT SECRET LOADED:", !!process.env.JWT_SECRET); FANBASE _SECRETE_2003
 
 const authRoutes = require("./routes/auth");
 const eventRoutes = require("./routes/events");
