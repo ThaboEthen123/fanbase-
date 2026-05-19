@@ -16,13 +16,13 @@ router.post("/signup", async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: "organiser" // auto organiser as you wanted
+      role: "organiser"
     });
 
     res.json({ success: true, user });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -32,14 +32,20 @@ router.post("/login", async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.json({ error: "User not found" });
+
+    if (!user) {
+      return res.json({ success: false, error: "User not found" });
+    }
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.json({ error: "Wrong password" });
+
+    if (!match) {
+      return res.json({ success: false, error: "Wrong password" });
+    }
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      "secret123",
+      process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
@@ -50,7 +56,7 @@ router.post("/login", async (req, res) => {
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
