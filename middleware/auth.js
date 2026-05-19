@@ -16,13 +16,22 @@ module.exports = function (req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     req.user = {
-      id: decoded.id,
+      id: decoded.id || decoded.userId || decoded._id,
       role: decoded.role
     };
+
+    if (!req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: "Invalid token structure"
+      });
+    }
 
     next();
 
   } catch (err) {
+    console.log("AUTH ERROR:", err.message);
+
     return res.status(401).json({
       success: false,
       error: "Unauthorized access"
