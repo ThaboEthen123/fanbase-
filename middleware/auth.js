@@ -15,15 +15,16 @@ module.exports = function (req, res, next) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    // FIX: consistent user object
     req.user = {
-      id: decoded.id || decoded.userId || decoded._id,
+      id: decoded.id,
       role: decoded.role
     };
 
     if (!req.user.id) {
       return res.status(401).json({
         success: false,
-        error: "Invalid token structure"
+        error: "Invalid token payload"
       });
     }
 

@@ -1,48 +1,60 @@
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-require("dotenv").config();console.log("JWT SECRET LOADED:", !!process.env.JWT_SECRET); FANBASE _SECRETE_2003
 
 const authRoutes = require("./routes/auth");
 const eventRoutes = require("./routes/events");
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// Routes
+/* =========================
+   DEBUG STARTUP
+========================= */
+console.log("🚀 SERVER STARTING...");
+console.log("JWT LOADED:", !!process.env.JWT_SECRET);
+console.log("MONGO LOADED:", !!process.env.MONGODB_URI);
+
+/* =========================
+   ROUTES
+========================= */
 app.use("/api/auth", authRoutes);
 app.use("/api/events", eventRoutes);
 
-// Home route
 app.get("/", (req, res) => {
-  res.json({ message: "Fanbase API Running 🚀" });
+  res.json({ success: true, message: "Fanbase API Running 🚀" });
 });
 
-// Debug route (VERY IMPORTANT)
-app.get("/debug-db", async (req, res) => {
+/* =========================
+   DATABASE + SERVER START
+========================= */
+async function startServer() {
   try {
-    const dbName = mongoose.connection.db.databaseName;
-    const collections = await mongoose.connection.db.listCollections().toArray();
+    if (!process.env.MONGODB_URI) {
+      throw new Error("MONGODB_URI missing");
+    }
 
-    res.json({
-      db: dbName,
-      collections: collections.map(c => c.name)
+    console.log("⏳ Connecting to MongoDB...");
+
+    await mongoose.connect(process.env.MONGODB_URI);
+
+    console.log("✅ MongoDB connected");
+
+    const PORT = process.env.PORT || 5000;
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server running on port ${PORT}`);
     });
 
   } catch (err) {
-    res.json({ error: err.message });
+    console.error("❌ SERVER CRASH:");
+    console.error(err.message);
+    process.exit(1);
   }
-});
+}
 
-// MongoDB connection (ONLY METHOD USED)
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log("MongoDB Connected ✅"))
-  .catch(err => console.log("MongoDB Error ❌", err));
-
-// Start server
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+startServer();
